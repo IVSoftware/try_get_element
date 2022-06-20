@@ -8,39 +8,53 @@ namespace try_get_element
     {
         static void Main(string[] args)
         {
-    var doc = XDocument.Parse(source);
-    var col = doc.Root.Elements("LineItems")
-            .Elements("LineItem")
-            .Elements("OrderLine")
-            .Select(e => new
-            {
-                VendorPartNumber = e.Element("VendorPartNumber").Value,
-                Date = e.TryGetElement("ExpectedDate", out XElement xel) ? 
-                    xel.Value : 
-                    String.Empty
-            }).ToArray();
+            var doc = XDocument.Parse(source);
+            var col = doc.Root.Elements("LineItems")
+                .Elements("LineItem")
+                .Elements("OrderLine")
+                .Select(e => new
+                {
+                    PurchaseOrderNumber = doc.Root.Element("Header").Element("OrderHeader").Element("Purchase").Value,
+                    VendorPartNumber = e.Element("VendorPartNumber").Value,
+                    ItemStatus = e.Element("ItemStatus").Value,
+                    Date = e.TryGetElement("ExpectedDate", out XElement xel) ? 
+                        xel.Value : 
+                        String.Empty
+                }).ToArray();
 
-    foreach (var orderline in col)
-    {
-        Console.WriteLine(orderline.ToString());
-    }
+            foreach (var orderline in col)
+            {
+                Console.WriteLine(orderline.ToString());
+            }
         }
 
     const string source =
-    @"<?xml version=""1.0"" encoding=""utf-8""?>
-    <root>
+    @"<Purchase>
+        <Header>
+            <OrderHeader>
+                <Purchase>12345</Purchase>
+            </OrderHeader>
+        </Header>
         <LineItems>
-	        <LineItem>
-		        <OrderLine>
-			        <VendorPartNumber>1</VendorPartNumber>
-			        <ExpectedDate>6/20/2022 4:50:34 PM</ExpectedDate>
-		        </OrderLine>
-		        <OrderLine>
-			        <VendorPartNumber>2</VendorPartNumber>
-		        </OrderLine>
-	        </LineItem>
+            <LineItem>
+                <OrderLine>
+                    <VendorPartNumber>1</VendorPartNumber>
+                    <UnitPrice>1073.25</UnitPrice>
+                    <ExtendedLineAmount>1073.25</ExtendedLineAmount>
+                    <ItemStatus>Backorder</ItemStatus>
+                    <ExpectedDate>2022-05-25</ExpectedDate>
+                </OrderLine>
+            </LineItem>
+            <LineItem>
+                <OrderLine>
+                    <VendorPartNumber>2</VendorPartNumber>
+                    <UnitPrice>292.410000</UnitPrice>
+                    <ExtendedLineAmount>584.82</ExtendedLineAmount>
+                    <ItemStatus>Released</ItemStatus>
+                </OrderLine>
+            </LineItem>
         </LineItems>
-    </root>";
+    </Purchase>";
     }
     public static class Extensions
     {
